@@ -4,6 +4,8 @@
  * Currently this logic is triggered by a python script called when printing.
  */
 
+#include <Servo.h> 
+
 const int ledCount = 9;
 const int confirmPin = 11; 
 const int del = 100;
@@ -12,6 +14,9 @@ boolean isLighting = false;
 //int ledPins[] = { 2, 3, 4, 5, 6, 7,8,9,10 }; // correct way round
 int ledPins[] = { 10, 9, 8, 7, 6, 5, 4, 3, 2 }; // backwards for installation! whoops. 
 
+Servo myservo;
+int pos = 0;
+int servoSpeed = 6;
 
 /**
  * SETUP
@@ -26,6 +31,8 @@ void setup()
   pinMode(confirmPin, OUTPUT);
   digitalWrite(confirmPin, HIGH);
   
+  myservo.attach(13);
+  
   Serial.begin(9600);
 }
 
@@ -36,61 +43,31 @@ void setup()
 void loop() 
 {
   
-  /*
-  // loop over the LED array:
-  for (int thisLed = 0; thisLed < ledCount; thisLed++) {
-    // if the array element's index is less than ledLevel,
-    // turn the pin for this element on:
-    if (thisLed < ledLevel) {
-      digitalWrite(ledPins[thisLed], HIGH);
-    } 
-    // turn off all pins higher than the ledLevel:
-    else {
-      digitalWrite(ledPins[thisLed], LOW); 
-    }
-  }
-  
-  
-  for (int thisLed = 0; thisLed < ledCount; thisLed++) {
-    digitalWrite(ledPins[thisLed], HIGH);
-  }
-  */
-  
-  /*
-  digitalWrite(ledPins[0], HIGH);
-  delay(1000);
-  digitalWrite(ledPins[0], LOW);
-  delay(1000);
-  */
-  
-  //analogWrite(motorPin, 255);
-  
-  //killLights();
-  
-
-  if (Serial.available() > 0) 
-  {
-    //digitalWrite(ledPins[0], HIGH);
-    
-    int inByte = Serial.read();
-    
-    if(inByte == '1')
-    {
-      if(isLighting == false)
-      {
-        isLighting = true; 
-        startLights();  
-      } 
-    }
-  }
-
-  /*
   if(isLighting == false)
   {
-    isLighting = true; 
-    startLights();  
+    if (Serial.available() > 0) 
+    {
+        int inByte = Serial.read();
+      
+        if(inByte == '1')
+        {
+            isLighting = true; 
+            startLights();
+        } 
+
+    }  
+  }
+  
+  for(pos = 0; pos < 180; pos += servoSpeed)  // goes from 0 degrees to 180 degrees 
+  {                                  // in steps of 1 degree 
+    myservo.write(pos);              // tell servo to go to position in variable 'pos' 
+    delay(15);                       // waits 15ms for the servo to reach the position 
   } 
-  */
+  for(pos = 180; pos>=1; pos-= servoSpeed)     // goes from 180 degrees to 0 degrees 
+  {                                
+    myservo.write(pos);              // tell servo to go to position in variable 'pos' 
+    delay(15);                       // waits 15ms for the servo to reach the position 
+  } 
 }
 
 
@@ -173,7 +150,7 @@ void startLights()
  * Turn everything off again, reset state
  */
 void resetLights()
-{
+{ 
   for (int thisLed = 0; thisLed < ledCount; thisLed++) 
   {
      digitalWrite(ledPins[thisLed], LOW);
